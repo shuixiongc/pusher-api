@@ -4,8 +4,13 @@ const Pusher = require('pusher');
 const path = require('path');
 
 const app = express();
-app.use(cors());
-app.use(express.json({ strict: false }));  // 放宽 JSON 解析限制
+// 修改 CORS 配置
+app.use(cors({
+    origin: '*',
+    methods: ['GET', 'POST'],
+    allowedHeaders: ['Content-Type']
+}));
+app.use(express.json({ strict: false }));
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 const pusher = new Pusher({
@@ -17,7 +22,10 @@ const pusher = new Pusher({
 });
 
 app.post('/api/message', async (req, res) => {
-    console.log('收到请求:', req.body);  // 添加请求日志
+    console.log('收到请求:', {
+        headers: req.headers,
+        body: req.body
+    });
     
     try {
         const result = await pusher.trigger('my-channel', 'my-event', {
@@ -25,7 +33,7 @@ app.post('/api/message', async (req, res) => {
             time: new Date().toISOString()
         });
         
-        console.log('Pusher 结果:', result);  // 添加结果日志
+        console.log('Pusher 结果:', result);
         res.json({ success: true });
     } catch (error) {
         console.error('Pusher 错误:', error);
