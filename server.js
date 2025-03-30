@@ -7,12 +7,6 @@ app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
 
-// 添加错误处理中间件
-app.use((err, req, res, next) => {
-  console.error('Error:', err);
-  res.status(500).json({ error: err.message });
-});
-
 const pusher = new Pusher({
     appId: "1966830",
     key: "ff3ef8b9954432e95680",
@@ -23,15 +17,30 @@ const pusher = new Pusher({
 
 app.post('/api/message', async (req, res) => {
     try {
+        // 添加请求体验证
+        const message = req.body.message || 'hello world';
+        
         const result = await pusher.trigger('my-channel', 'my-event', {
-            message: 'hello world'
+            message: message,
+            timestamp: new Date().toISOString()
         });
+        
         console.log('Pusher result:', result);
-        res.json({ success: true, result });
+        res.json({ 
+            success: true, 
+            message: message,
+            result 
+        });
     } catch (error) {
         console.error('Pusher error:', error);
         res.status(500).json({ error: error.message });
     }
+});
+
+// 添加错误处理中间件
+app.use((err, req, res, next) => {
+    console.error('Error:', err);
+    res.status(500).json({ error: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
