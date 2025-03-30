@@ -4,13 +4,12 @@ const Pusher = require('pusher');
 const path = require('path');
 
 const app = express();
-// 修改 CORS 配置
-app.use(cors({
-    origin: '*',
-    methods: ['GET', 'POST'],
-    allowedHeaders: ['Content-Type']
-}));
-app.use(express.json({ strict: false }));
+// 简化 CORS 和请求处理配置
+app.use(cors());
+app.use(express.raw());
+app.use(express.text());
+app.use(express.urlencoded({ extended: true }));
+app.use(express.json());
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 const pusher = new Pusher({
@@ -22,22 +21,17 @@ const pusher = new Pusher({
 });
 
 app.post('/api/message', async (req, res) => {
-    console.log('收到请求:', {
-        headers: req.headers,
-        body: req.body
-    });
-    
     try {
-        const result = await pusher.trigger('my-channel', 'my-event', {
+        // 简化消息发送逻辑
+        await pusher.trigger('my-channel', 'my-event', {
             message: 'hello world',
             time: new Date().toISOString()
         });
         
-        console.log('Pusher 结果:', result);
-        res.json({ success: true });
+        res.status(200).send('OK');
     } catch (error) {
-        console.error('Pusher 错误:', error);
-        res.status(500).json({ error: error.message });
+        console.error('Error:', error);
+        res.status(500).send(error.message);
     }
 });
 
