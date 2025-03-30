@@ -5,8 +5,7 @@ const Pusher = require('pusher');
 const app = express();
 app.use(cors());
 app.use(express.json());
-// 修改静态文件路径配置
-app.use(express.static(__dirname + '/public'));
+app.use(express.static('public'));
 
 const pusher = new Pusher({
     appId: "1966830",
@@ -18,30 +17,18 @@ const pusher = new Pusher({
 
 app.post('/api/message', async (req, res) => {
     try {
-        // 添加请求体验证
-        const message = req.body.message || 'hello world';
-        
+        // 不再验证请求体，直接发送固定消息
         const result = await pusher.trigger('my-channel', 'my-event', {
-            message: message,
+            message: '测试消息',
             timestamp: new Date().toISOString()
         });
         
         console.log('Pusher result:', result);
-        res.json({ 
-            success: true, 
-            message: message,
-            result 
-        });
+        res.json({ success: true });
     } catch (error) {
         console.error('Pusher error:', error);
         res.status(500).json({ error: error.message });
     }
-});
-
-// 添加错误处理中间件
-app.use((err, req, res, next) => {
-    console.error('Error:', err);
-    res.status(500).json({ error: err.message });
 });
 
 const PORT = process.env.PORT || 3000;
