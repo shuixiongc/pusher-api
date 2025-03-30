@@ -18,10 +18,18 @@ const pusher = new Pusher({
 
 app.post('/api/message', async (req, res) => {
     try {
+        // 添加请求体验证和默认消息
+        const message = req.body && req.body.message ? req.body.message : 'hello world';
+        
         await pusher.trigger('my-channel', 'my-event', {
-            message: 'hello world'
+            message: message,
+            time: new Date().toISOString()
         });
-        res.json({ success: true });
+        
+        res.json({ 
+            success: true,
+            message: '消息已发送'
+        });
     } catch (error) {
         console.error('Pusher error:', error);
         res.status(500).json({ error: error.message });
