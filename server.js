@@ -5,7 +5,7 @@ const path = require('path');
 
 const app = express();
 app.use(cors());
-app.use(express.json());
+app.use(express.json({ strict: false }));  // 放宽 JSON 解析限制
 app.use('/', express.static(path.join(__dirname, 'public')));
 
 const pusher = new Pusher({
@@ -17,21 +17,29 @@ const pusher = new Pusher({
 });
 
 app.post('/api/message', async (req, res) => {
+    console.log('收到请求:', req.body);  // 添加请求日志
+    
     try {
-        // 移除请求体验证，直接发送固定消息
-        await pusher.trigger('my-channel', 'my-event', {
+        const result = await pusher.trigger('my-channel', 'my-event', {
             message: 'hello world',
             time: new Date().toISOString()
         });
         
+        console.log('Pusher 结果:', result);  // 添加结果日志
         res.json({ success: true });
     } catch (error) {
-        console.error('Pusher error:', error);
+        console.error('Pusher 错误:', error);
         res.status(500).json({ error: error.message });
     }
 });
 
+// 添加全局错误处理
+app.use((err, req, res, next) => {
+    console.error('服务器错误:', err);
+    res.status(500).json({ error: '服务器内部错误' });
+});
+
 const PORT = process.env.PORT || 3000;
 app.listen(PORT, () => {
-    console.log(`Server is running on port ${PORT}`);
+    console.log(`服务器运行在端口 ${PORT}`);
 });
