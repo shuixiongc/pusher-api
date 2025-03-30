@@ -5,7 +5,8 @@ const Pusher = require('pusher');
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+// 修改静态文件路径配置
+app.use(express.static(__dirname + '/public'));
 
 const pusher = new Pusher({
     appId: "1966830",
