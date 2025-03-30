@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Pusher Test</title>
+    <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+    <style>
+        #message-display {
+            padding: 10px;
+            border: 1px solid #ccc;
+            margin: 10px 0;
+            min-height: 50px;
+        }
+        button {
+            padding: 8px 16px;
+            background-color: #4CAF50;
+            color: white;
+            border: none;
+            cursor: pointer;
+            margin-top: 10px;
+        }
+    </style>
+    <script>
+        Pusher.logToConsole = true;
+        var pusher = new Pusher('ff3ef8b9954432e95680', {
+            cluster: 'mt1'
+        });
+
+        var channel = pusher.subscribe('my-channel');
+        channel.bind('my-event', function(data) {
+            document.getElementById('message-display').innerText = JSON.stringify(data, null, 2);
+        });
+
+        function sendTestMessage() {
+            fetch('/api/message', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => response.json())
+            .then(data => {
+                console.log('Success:', data);
+            })
+            .catch(error => {
+                console.error('Error:', error);
+            });
+        }
+    </script>
+</head>
+<body>
+    <h1>Pusher Test</h1>
+    <div id="message-display">等待消息...</div>
+    <p>
+        Try publishing an event to channel <code>my-channel</code>
+        with event name <code>my-event</code>.
+    </p>
+    <button onclick="sendTestMessage()">发送测试消息</button>
+</body>
+</html>
