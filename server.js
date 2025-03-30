@@ -1,11 +1,17 @@
-const Pusher = require('pusher');
 const express = require('express');
 const cors = require('cors');
+const Pusher = require('pusher');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
 app.use(express.static('public'));
+
+// 添加错误处理中间件
+app.use((err, req, res, next) => {
+  console.error('Error:', err);
+  res.status(500).json({ error: err.message });
+});
 
 const pusher = new Pusher({
     appId: "1966830",
@@ -17,13 +23,14 @@ const pusher = new Pusher({
 
 app.post('/api/message', async (req, res) => {
     try {
-        await pusher.trigger('my-channel', 'my-event', {
+        const result = await pusher.trigger('my-channel', 'my-event', {
             message: 'hello world'
         });
-        res.json({ success: true });
+        console.log('Pusher result:', result);
+        res.json({ success: true, result });
     } catch (error) {
-        console.error('Error:', error);
-        res.status(500).json({ error: 'Failed to send message' });
+        console.error('Pusher error:', error);
+        res.status(500).json({ error: error.message });
     }
 });
 
