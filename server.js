@@ -1,11 +1,12 @@
 const express = require('express');
 const cors = require('cors');
 const Pusher = require('pusher');
+const path = require('path');
 
 const app = express();
 app.use(cors());
 app.use(express.json());
-app.use(express.static('public'));
+app.use('/', express.static(path.join(__dirname, 'public')));
 
 const pusher = new Pusher({
     appId: "1966830",
@@ -17,13 +18,9 @@ const pusher = new Pusher({
 
 app.post('/api/message', async (req, res) => {
     try {
-        // 不再验证请求体，直接发送固定消息
-        const result = await pusher.trigger('my-channel', 'my-event', {
-            message: '测试消息',
-            timestamp: new Date().toISOString()
+        await pusher.trigger('my-channel', 'my-event', {
+            message: 'hello world'
         });
-        
-        console.log('Pusher result:', result);
         res.json({ success: true });
     } catch (error) {
         console.error('Pusher error:', error);
